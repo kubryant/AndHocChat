@@ -103,9 +103,9 @@ public class AndHocService implements AndHocServiceInterface {
 
     @Override
     public void broadcast(final Context context, AndHocMessage record) {
-        if(mServiceInfo != null) {
-            stopBroadcast(context);
-        }
+        //if(mServiceInfo != null) {
+        //    stopBroadcast(context);
+        //}
 
         mServiceInfo = WifiP2pDnsSdServiceInfo.newInstance("_msg", "_presence._tcp", record.getMessage());
         mManager.addLocalService(mChannel, mServiceInfo, new WifiP2pManager.ActionListener() {
