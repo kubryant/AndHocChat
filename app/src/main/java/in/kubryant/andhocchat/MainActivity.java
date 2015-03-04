@@ -1,13 +1,22 @@
 package in.kubryant.andhocchat;
 
-import android.support.v7.app.ActionBarActivity;
+//import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -16,8 +25,10 @@ import in.kubryant.andhoclib.src.AndHocMessage;
 import in.kubryant.andhoclib.src.AndHocMessageListener;
 import in.kubryant.andhoclib.src.AndHocService;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends /*ActionBar*/Activity {
     private EditText editTextMessage;
+    private ToggleButton mSwitchBroadcast;
+    private ToggleButton mSwitchListen;
 
     private ArrayAdapter<String> mAdapter;
     private ArrayList<String> messageList = new ArrayList<>();
@@ -25,11 +36,17 @@ public class MainActivity extends ActionBarActivity {
 
     //private String mUser = UUID.randomUUID().toString();
     private AndHocService mService;
+    private ServiceConnection mConnection;
+    private boolean mBound;
+    private boolean mBroadcast = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mSwitchBroadcast = (ToggleButton) findViewById(R.id.broadcastButton);
+        mSwitchListen = (ToggleButton) findViewById(R.id.listenButton);
 
         editTextMessage = (EditText) findViewById(R.id.editTextMessage);
         ListView messageListView = (ListView) findViewById(R.id.messageListView);
@@ -37,40 +54,66 @@ public class MainActivity extends ActionBarActivity {
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, messageList);
         messageListView.setAdapter(mAdapter);
 
-        mService = new AndHocService(this);
-        mService.addListener(new AndHocMessageListener() {
+        mConnection = new ServiceConnection() {
             @Override
-            public void onNewMessage(AndHocMessage msg) {
-                String message = msg.getMessage().get("msg");
-                String user = msg.getMessage().get("user");
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Toast.makeText(getApplicationContext(), "AndHocService Connected", Toast.LENGTH_SHORT).show();
+                Log.d("SHOUT", "AndHocService Connected");
+                mService = ((AndHocService.AndHocBinder)service).getService();
+                mBound = true;
 
-                if(!repeatCheck.contains(user)) {
-                    repeatCheck.add(user);
-                    if (!message.equals("")) {
-                        messageList.add(message);
-                        mAdapter.notifyDataSetChanged();
+                mService.addListener(new AndHocMessageListener() {
+                    @Override
+                    public void onNewMessage(AndHocMessage msg) {
+                        String message = msg.getMessage().get("msg");
+                        String user = msg.getMessage().get("user");
+
+                        if(!repeatCheck.contains(user)) {
+                            repeatCheck.add(user);
+                            if (!message.equals("")) {
+                                messageList.add(message);
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        }
                     }
-                }
+                });
             }
-        });
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Toast.makeText(getApplicationContext(), "AndHocService Disconnected", Toast.LENGTH_SHORT).show();
+                Log.d("SHOUT", "AndHocService Disconnected");
+                mService = null;
+            }
+        };
+        Log.d("SHOUT", "Binding Service..");
+        Intent intent = new Intent(this, AndHocService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mService.stopBroadcast(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mService.stopBroadcast(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mService.stopBroadcast(this);
+        if(mBound) {
+            mService.stopBroadcast();
+            mService.stopListen();
+            unbindService();
+        }
     }
 
     @Override
@@ -87,23 +130,50 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onClickBroadcast(View view) {
-        String message = editTextMessage.getText().toString();
-
-        if(!message.equals("")) {
-            AndHocMessage record = new AndHocMessage();
-            record.add("user", UUID.randomUUID().toString());
-            record.add("msg", message);
-            mService.broadcast(this, record);
+        if(mBound) {
+            if(mSwitchBroadcast.isChecked()) {
+                mBroadcast = true;
+            } else {
+                mBroadcast = false;
+                mService.stopBroadcast();
+            }
         }
     }
 
     public void onClickListen(View view) {
-        mService.listen(this);
+        if(mBound) {
+            if(mSwitchListen.isChecked()) {
+                mService.listenTimer(10);
+            } else {
+                mService.stopListen();
+            }
+        }
     }
 
-    public void onClickStop(View view) {
-        mService.stopBroadcast(this);
+    public void onClickSend(View view) {
+        if(mBroadcast) {
+            String message = editTextMessage.getText().toString();
+
+            if (!message.equals("")) {
+                AndHocMessage record = new AndHocMessage();
+                record.add("user", UUID.randomUUID().toString());
+                record.add("msg", message);
+                mService.broadcast(record);
+            }
+        } else {
+            Toast.makeText(this, "Broadcasting is off!", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    public void onClickClear(View view) { mService.stopListen(this); }
+    public void onClickClear(View view) {
+        messageList.clear();
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public void unbindService() {
+        if(mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
 }

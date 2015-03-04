@@ -6,58 +6,70 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
     <EditText
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:ems="10"
         android:id="@+id/editTextMessage"
-        android:hint="@string/messageHint" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/broadcastButton"
-        android:id="@+id/buttonBroadcast"
-        android:onClick="onClickBroadcast"
-        android:layout_below="@+id/editTextMessage"
+        android:hint="@string/messageHint"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/listenButton"
-        android:id="@+id/buttonListen"
-        android:onClick="onClickListen"
-        android:layout_below="@+id/editTextMessage"
-        android:layout_alignRight="@+id/editTextMessage"
-        android:layout_alignEnd="@+id/editTextMessage" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/stopButton"
-        android:id="@+id/buttonStop"
-        android:onClick="onClickStop"
-        android:layout_below="@+id/buttonBroadcast"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/sendButton"
+        android:layout_toStartOf="@+id/sendButton"
+        android:inputType="text" />
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/messageListView"
-        android:layout_below="@+id/buttonStop"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true" />
+        android:layout_above="@+id/broadcastButton" />
 
     <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sendButton"
+        android:id="@+id/sendButton"
+        android:onClick="onClickSend"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textOff="@string/broadcastButtonOff"
+        android:textOn="@string/broadcastButtonOn"
+        android:id="@+id/broadcastButton"
+        android:onClick="onClickBroadcast"
+        android:layout_above="@+id/sendButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:checked="false" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textOff="@string/listenButtonOff"
+        android:textOn="@string/listenButtonOn"
+        android:id="@+id/listenButton"
+        android:onClick="onClickListen"
+        android:layout_alignTop="@+id/broadcastButton"
+        android:layout_toRightOf="@+id/broadcastButton"
+        android:layout_toEndOf="@+id/broadcastButton" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/clearButton"
         android:id="@+id/clearButton"
         android:onClick="onClickClear"
-        android:layout_alignTop="@+id/buttonStop"
-        android:layout_alignRight="@+id/buttonListen"
-        android:layout_alignEnd="@+id/buttonListen" />
+        android:layout_alignBottom="@+id/listenButton"
+        android:layout_toRightOf="@+id/listenButton"
+        android:layout_toEndOf="@+id/listenButton" />
 
 </RelativeLayout>

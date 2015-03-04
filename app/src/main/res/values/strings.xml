@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">AndHocChat</string>
     <string name="action_settings">Settings</string>
-    <string name="messageHint">Broadcast message...</string>
-    <string name="broadcastButton">Broadcast</string>
-    <string name="listenButton">Listen</string>
-    <string name="stopButton">Stop Broadcasting</string>
-    <string name="clearButton">Stop Listening</string>
 
+    <string name="messageHint">Send message...</string>
+    <string name="sendButton">Send</string>
+    <string name="broadcastButtonOn">Broadcast On</string>
+    <string name="broadcastButtonOff">Broadcast Off</string>
+    <string name="listenButtonOn">Listen On</string>
+    <string name="listenButtonOff">Listen Off</string>
+    <string name="clearButton">Clear List</string>
 </resources>

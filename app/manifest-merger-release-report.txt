@@ -69,3 +69,11 @@ uses-permission#android.permission.INTERNET
 ADDED from AndHocChat:andhoclib:unspecified:13:5
 	android:name
 		ADDED from AndHocChat:andhoclib:unspecified:13:22
+service#in.kubryant.andhoclib.src.AndHocService
+ADDED from AndHocChat:andhoclib:unspecified:19:9
+	android:exported
+		ADDED from AndHocChat:andhoclib:unspecified:22:13
+	android:enabled
+		ADDED from AndHocChat:andhoclib:unspecified:21:13
+	android:name
+		ADDED from AndHocChat:andhoclib:unspecified:20:13
