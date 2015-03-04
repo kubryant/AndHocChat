@@ -4,6 +4,7 @@
 /.idea/libraries
 .DS_Store
 /build
+/andhoclib/build
 *.apk
 /app/app-release.apk
 *.iml
