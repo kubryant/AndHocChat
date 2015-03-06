@@ -1,25 +1,31 @@
 package in.kubryant.andhoclib.src;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import in.kubryant.andhoclib.interfaces.AndHocMessageInterface;
 
 public class AndHocMessage implements AndHocMessageInterface {
-    HashMap<String, String> record = new HashMap();
+    Map<String, String> record = new HashMap<String, String>();
 
     public AndHocMessage() {}
 
-    public AndHocMessage(HashMap<String, String> rec) {
+    public AndHocMessage(Map<String, String> rec) {
         record = rec;
     }
 
     @Override
-    public void setMessage(HashMap<String, String> rec) {
+    public String get(String name) {
+        return record.get(name);
+    }
+
+    @Override
+    public void setRecord(Map<String, String> rec) {
         record = rec;
     }
 
     @Override
-    public HashMap<String, String> getMessage() {
+    public Map<String, String> getRecord() {
         return record;
     }
 

@@ -9,5 +9,5 @@
     <string name="broadcastButtonOff">Broadcast Off</string>
     <string name="listenButtonOn">Listen On</string>
     <string name="listenButtonOff">Listen Off</string>
-    <string name="clearButton">Clear List</string>
+    <string name="clearButton">Clear</string>
 </resources>

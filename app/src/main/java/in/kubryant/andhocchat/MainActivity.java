@@ -1,14 +1,7 @@
 package in.kubryant.andhocchat;
 
-//import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,9 +16,10 @@ import java.util.UUID;
 
 import in.kubryant.andhoclib.src.AndHocMessage;
 import in.kubryant.andhoclib.src.AndHocMessageListener;
+import in.kubryant.andhoclib.src.AndHocMessenger;
 import in.kubryant.andhoclib.src.AndHocService;
 
-public class MainActivity extends /*ActionBar*/Activity {
+public class MainActivity extends Activity {
     private EditText editTextMessage;
     private ToggleButton mSwitchBroadcast;
     private ToggleButton mSwitchListen;
@@ -35,9 +29,7 @@ public class MainActivity extends /*ActionBar*/Activity {
     private ArrayList<String> repeatCheck = new ArrayList<>();
 
     //private String mUser = UUID.randomUUID().toString();
-    private AndHocService mService;
-    private ServiceConnection mConnection;
-    private boolean mBound;
+    private AndHocMessenger mMessenger;
     private boolean mBroadcast = false;
 
     @Override
@@ -54,41 +46,23 @@ public class MainActivity extends /*ActionBar*/Activity {
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, messageList);
         messageListView.setAdapter(mAdapter);
 
-        mConnection = new ServiceConnection() {
+        mMessenger = new AndHocMessenger(this);
+
+        AndHocService.addListener(new AndHocMessageListener() {
             @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                Toast.makeText(getApplicationContext(), "AndHocService Connected", Toast.LENGTH_SHORT).show();
-                Log.d("SHOUT", "AndHocService Connected");
-                mService = ((AndHocService.AndHocBinder)service).getService();
-                mBound = true;
+            public void onNewMessage(AndHocMessage msg) {
+                String message = msg.get("msg");
+                String user = msg.get("user");
 
-                mService.addListener(new AndHocMessageListener() {
-                    @Override
-                    public void onNewMessage(AndHocMessage msg) {
-                        String message = msg.getMessage().get("msg");
-                        String user = msg.getMessage().get("user");
-
-                        if(!repeatCheck.contains(user)) {
-                            repeatCheck.add(user);
-                            if (!message.equals("")) {
-                                messageList.add(message);
-                                mAdapter.notifyDataSetChanged();
-                            }
-                        }
+                if (!repeatCheck.contains(user)) {
+                    repeatCheck.add(user);
+                    if (!message.equals("")) {
+                        messageList.add(message);
+                        mAdapter.notifyDataSetChanged();
                     }
-                });
+                }
             }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                Toast.makeText(getApplicationContext(), "AndHocService Disconnected", Toast.LENGTH_SHORT).show();
-                Log.d("SHOUT", "AndHocService Disconnected");
-                mService = null;
-            }
-        };
-        Log.d("SHOUT", "Binding Service..");
-        Intent intent = new Intent(this, AndHocService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        });
     }
 
     @Override
@@ -109,11 +83,6 @@ public class MainActivity extends /*ActionBar*/Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mBound) {
-            mService.stopBroadcast();
-            mService.stopListen();
-            unbindService();
-        }
     }
 
     @Override
@@ -130,35 +99,32 @@ public class MainActivity extends /*ActionBar*/Activity {
     }
 
     public void onClickBroadcast(View view) {
-        if(mBound) {
-            if(mSwitchBroadcast.isChecked()) {
-                mBroadcast = true;
-            } else {
-                mBroadcast = false;
-                mService.stopBroadcast();
-            }
+        if(mSwitchBroadcast.isChecked()) {
+            mBroadcast = true;
+        } else {
+            mBroadcast = false;
+            mMessenger.stopBroadcast(this);
         }
     }
 
     public void onClickListen(View view) {
-        if(mBound) {
-            if(mSwitchListen.isChecked()) {
-                mService.listenTimer(10);
-            } else {
-                mService.stopListen();
-            }
+        if(mSwitchListen.isChecked()) {
+            AndHocService.startAndHocService(this);
+        } else {
+            AndHocService.stopAndHocService(this);
         }
     }
 
     public void onClickSend(View view) {
         if(mBroadcast) {
             String message = editTextMessage.getText().toString();
+            editTextMessage.setText("");
 
             if (!message.equals("")) {
                 AndHocMessage record = new AndHocMessage();
                 record.add("user", UUID.randomUUID().toString());
                 record.add("msg", message);
-                mService.broadcast(record);
+                mMessenger.broadcast(this, record);
             }
         } else {
             Toast.makeText(this, "Broadcasting is off!", Toast.LENGTH_SHORT).show();
@@ -168,12 +134,5 @@ public class MainActivity extends /*ActionBar*/Activity {
     public void onClickClear(View view) {
         messageList.clear();
         mAdapter.notifyDataSetChanged();
-    }
-
-    public void unbindService() {
-        if(mBound) {
-            unbindService(mConnection);
-            mBound = false;
-        }
     }
 }

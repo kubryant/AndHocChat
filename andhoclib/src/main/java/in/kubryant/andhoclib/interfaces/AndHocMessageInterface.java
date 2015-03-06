@@ -1,9 +1,10 @@
 package in.kubryant.andhoclib.interfaces;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public interface AndHocMessageInterface {
-    public void setMessage(HashMap<String, String> rec);
-    public HashMap<String, String> getMessage();
+    public String get(String name);
+    public void setRecord(Map<String, String> rec);
+    public Map<String, String> getRecord();
     public void add(String key, String value);
 }
