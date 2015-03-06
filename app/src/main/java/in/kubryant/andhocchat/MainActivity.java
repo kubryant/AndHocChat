@@ -39,6 +39,9 @@ public class MainActivity extends Activity {
 
         mSwitchBroadcast = (ToggleButton) findViewById(R.id.broadcastButton);
         mSwitchListen = (ToggleButton) findViewById(R.id.listenButton);
+        if(AndHocService.isRunning()) {
+            mSwitchListen.setChecked(true);
+        }
 
         editTextMessage = (EditText) findViewById(R.id.editTextMessage);
         ListView messageListView = (ListView) findViewById(R.id.messageListView);
@@ -73,16 +76,19 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        mMessenger.stopBroadcast(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        mMessenger.stopBroadcast(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mMessenger.stopBroadcast(this);
     }
 
     @Override

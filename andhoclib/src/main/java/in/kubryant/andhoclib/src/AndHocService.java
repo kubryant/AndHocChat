@@ -19,7 +19,7 @@ public class AndHocService extends Service implements AndHocServiceInterface, Ru
     private final String TAG = AndHocService.class.getSimpleName();
 
     private Handler handler = new Handler();
-    private boolean listening = false;
+    private static boolean listening = false;
 
     private static AndHocMessageListener mListener = null;
     private WifiP2pManager mManager;
@@ -36,8 +36,8 @@ public class AndHocService extends Service implements AndHocServiceInterface, Ru
     @Override
     public void onDestroy() {
         Log.d(TAG, "AndHocService Destroyed");
-        if(listening) {
-            listening = false;
+        if(AndHocService.listening) {
+            AndHocService.listening = false;
             handler.removeCallbacks(this);
             stopListen();
         }
@@ -79,9 +79,13 @@ public class AndHocService extends Service implements AndHocServiceInterface, Ru
         mListener = null;
     }
 
+    public static boolean isRunning() {
+        return AndHocService.listening;
+    }
+
     @Override
     public void listen() {
-        listening = true;
+        AndHocService.listening = true;
         WifiP2pManager.DnsSdTxtRecordListener txtListener = new WifiP2pManager.DnsSdTxtRecordListener() {
             @Override
             public void onDnsSdTxtRecordAvailable(String fullDomainName, Map<String, String> record, WifiP2pDevice srcDevice) {
@@ -125,6 +129,7 @@ public class AndHocService extends Service implements AndHocServiceInterface, Ru
         handler.postDelayed(this, 5000);
     }
 
+    @Override
     public void stopListen() {
         mManager.clearServiceRequests(mChannel, new WifiP2pManager.ActionListener() {
             @Override
